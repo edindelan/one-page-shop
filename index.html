@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Maps</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/font-awesome.css">
+</head>
+<body>
+<div class="header">
+    <div class="container">
+        <div class="logo">
+            <img src="images/assets/logo.svg" alt="">
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div id="maps"></div>
+</div>
+
+<div class="footer">
+
+</div>
+
+<script type="text/html" id="mapTemplate">
+    <div class="map <%= name %>" style="background-image: url(<%= coverImage %>)">
+        <div data-id="<%= id %>" class="open-map-modal">
+            Shop from <%= price %>€
+            <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="modalTemplate">
+    <div id="modal" class="modal <%= cart.opened ? 'opened' : '' %>">
+        <div class="modal-content">
+            <div class="popup-container">
+                <div class="side">
+                    <div class="slides">
+                        <% _.each(map.slides, function(slide, index) { %>
+                        <div class="slide <%= slide.type %>" data-index="<%= index %>" data-type="<%= slide.type %>"
+                             style="background-image: url(<%= slide.type === 'video' ? slide.thumbnail : slide.url %>)"></div>
+                        <% }); %>
+                    </div>
+                </div>
+                <div class="side">
+                    <div class="map-meta">
+                        <div class="likes">
+                            <i class="fa fa-heart heart-icon" aria-hidden="true"></i>
+                            <span class="likes-count"><%= map.likes %></span>
+                        </div>
+                        <h2 class="map-title"><%= map.label %></h2>
+                        <p class="map-description"><%= map.description %></p>
+                        <p class="map-specs">
+                            SPECS: <br/>
+                            <br/>
+                            <%= map.specs %>
+                        </p>
+                        <span class="price"><%= map.price %> EUR</span>
+                        <span class="buy">Add to cart</span>
+                     </div>
+                </div>
+            </div>
+            <div class="close-map">
+                <i class="fa fa-times" aria-hidden="true"></i>
+                <span class="tooltip">Close awesome map</span>
+            </div>
+            <div class="arrow left"><i class="fa fa-angle-left" aria-hidden="true"></i> Previous awesome map</div>
+            <div class="arrow right">Next awesome map <i class="fa fa-angle-right" aria-hidden="true"></i> </div>
+        </div>
+
+        <div class="open-cart-sidebar">
+            <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+            <span class="value"><%=cart.itemsCount %></span>
+        </div>
+        <div class="cart-box <%= cart.opened ? 'opened' : '' %>"></div>
+
+        <div class="overlay <%= cart.opened ? 'opened' : '' %>" style="background-image: url(<%= map.coverImage %>)"></div>
+     </div>
+</script>
+
+<script type="text/html" id="galleryModalTemplate">
+    <div id="galleryModal">
+        <div class="gallery-modal-container">
+            <div class="wrapper cf">
+                <% if(slide.type === 'image') { %>
+                    <img src="<%= slide.url %>"/>
+                <% } else if(slide.type === 'video') {%>
+                    <div class="videoWrapper">
+                        <iframe src="<%= slide.url %>?autoplay=1" width="100%" height="480" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+                    </div>
+                <% } else { %>
+                    <span>Image is missing.</span>
+                <% } %>
+                <div class="add-gallery-map-to-cart">Add this map to cart <i class="fa fa-shopping-cart" aria-hidden="true"></i></div>
+                <div class="arrow left"><i class="fa fa-angle-left" aria-hidden="true"></i></div>
+                <div class="arrow right"><i class="fa fa-angle-right" aria-hidden="true"></i></div>
+                <div class="close-gallery">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                    <span class="tooltip">Close gallery</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="overlay"></div>
+     </div>
+</script>
+
+<script type="text/html" id="cartTemplate">
+    <div id="cart" class="cf">
+        <% if(cart.itemsCount > 0) { %>
+        <div class="cart-close"><i class="fa fa-times" aria-hidden="true"></i><span class="label">Close cart</span></div>
+        <div class="cart-items-count"><i class="fa fa-shopping-cart" aria-hidden="true"></i> <span class="number"><%=cart.itemsCount %></span></div>
+            <div class="items cf">
+                <% _.each(cart.items, function(item, index) { %>
+                <div class="item">
+                    <span class="cart-map-image" data-id="<%= item.mapId %>" style="background-image: url(<%= item.map.coverImage %>)"></span>
+                    <div class="cart-map-meta">
+                        <span class="cart-map-name"><%= item.map.label %></span>
+                        <span class="cart-map-qty"><%= item.qty %> x </span>
+                        <span class="cart-map-price"><%= item.map.price %>€</span>
+                    </div>
+                    <div class="cart-map-delete" data-id="<%= item.mapId %>"><i class="fa fa-times" aria-hidden="true"></i></div>
+                </div>
+                <% }); %>
+            </div>
+            <div class="cart-total-amount">Total: <%=cart.totalAmount %>€</div>
+            <div class="cart-button cart-checkout open-checkout">Checkout</div>
+        <% } else { %>
+            <span class="cart-empty">
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                <span>Your shoping cart is empty, but it doesn't have to be!</span>
+
+                <div class="cart-button cart-empty-close">Close cart</div>
+            </span>
+        <% } %>
+
+    </div>
+
+</script>
+
+<script type="text/html" id="checkoutCartTemplate">
+    <div id="cart" class="cf">
+        <% if(cart.itemsCount > 0) { %>
+         <div class="cart-items-count"><i class="fa fa-shopping-cart" aria-hidden="true"></i> <span class="number"><%=cart.itemsCount %></span></div>
+        <div class="items cf">
+            <% _.each(cart.items, function(item, index) { %>
+            <div class="item">
+                <span class="cart-map-image" data-id="<%= item.mapId %>" style="background-image: url(<%= item.map.coverImage %>)"></span>
+                <div class="cart-map-meta">
+                    <span class="cart-map-name"><%= item.map.label %></span>
+                    <span class="cart-map-qty"><%= item.qty %> x </span>
+                    <span class="cart-map-price"><%= item.map.price %>€</span>
+                </div>
+                <div class="cart-map-delete" data-id="<%= item.mapId %>"><i class="fa fa-times" aria-hidden="true"></i></div>
+            </div>
+            <% }); %>
+        </div>
+        <div class="cart-total-amount">Total: <%=cart.totalAmount %>€</div>
+         <% } else { %>
+        <span class="cart-empty">
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                <span>Your shoping cart is empty, but it doesn't have to be!</span>
+
+                <div class="cart-button cart-empty-close">Close cart</div>
+            </span>
+        <% } %>
+
+    </div>
+
+</script>
+
+<script type="text/html" id="checkoutTemplate">
+    <div id="modal" class="modal checkout-modal">
+        <div class="modal-content">
+            <div class="popup-container cf">
+                <div class="popup-checkout">
+                    <div class="popup-payments">
+                        <span class="heading">Select payment method</span>
+                        <span class="card paypal selected"></span>
+                        <span class="credit-cards">
+                        <span class="card mastercard"></span>
+                        <span class="card maestro"></span>
+                        <span class="card visa"></span>
+                    </span>
+                        <div class="payment-inputs">
+                            <input placeholder="CARD NUMBER">
+                            <input placeholder="EXPIRY DATE">
+                            <input placeholder="CVS">
+                        </div>
+                    </div>
+                    <div class="popup-cart"></div>
+                    <div class="popup-address">
+                        <input placeholder="Name">
+                        <input placeholder="Lastname">
+                        <input placeholder="Address">
+                        <input placeholder="City">
+                        <input placeholder="Country">
+                        <input placeholder="Email">
+                    </div>
+                    <div class="popup-payments-buttons">
+                        <div class="make-purchase">Make purchase</div>
+                    </div>
+                </div>
+            </div>
+            <div class="close-map">
+                <i class="fa fa-times" aria-hidden="true"></i>
+                <span class="tooltip">Close checkout</span>
+            </div>
+        </div>
+
+        <div class="overlay"></div>
+    </div>
+</script>
+
+<script type="text/html" id="finalStepTemplate">
+    <div class="final-step">
+        <% if(!state.loading) { %>
+            <div class="success-icon"><i class="fa fa-check" aria-hidden="true"></i></div>
+            <span class="loading-text">Yey! Your map is on it's way!</span>
+            <span class="loading-text">Thank you for your oder!</span>
+
+            <span class="continue-shopping">Continue shopping</span>
+        <% } else { %>
+            <div class="loader"></div>
+            <span class="loading-text">Processing transaction...</span>
+        <% }  %>
+    </div>
+</script>
+
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
